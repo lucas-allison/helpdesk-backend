@@ -50,4 +50,12 @@ public class TecnicoService {
 		if (obj.isPresent() && obj.get().getId() != objDTO.getId())
 			throw new DataIntegrityViolationException("E-mail já cadastrado no sistema!");
 	}
+
+	public Tecnico update(Integer id, TecnicoDTO requestModel) {
+		requestModel.setId(id);
+		Tecnico oldObj = findById(id);
+		validaPorCpfEEmail(requestModel);
+		oldObj = new Tecnico(requestModel);
+		return repository.save(oldObj);
+	}
 }
