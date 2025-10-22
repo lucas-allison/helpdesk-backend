@@ -2,6 +2,7 @@ package com.lucas.helpdesk.resources.exceptions;
 
 import com.lucas.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.lucas.helpdesk.services.exceptions.ValidationError;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -48,5 +49,37 @@ public class ResourceExceptionHandler {
 		}
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<StandardError> constraintViolation(ConstraintViolationException ex,
+																   HttpServletRequest request) {
+
+		String detalhesErro = ex.getConstraintViolations().stream()
+				.map(violation -> {
+
+					String fieldName = violation.getPropertyPath().toString();
+					if (fieldName.contains("."))
+						fieldName = fieldName.substring(fieldName.lastIndexOf('.') + 1);
+
+					String annotationName = violation.getConstraintDescriptor()
+							.getAnnotation()
+							.annotationType()
+							.getSimpleName();
+
+					return fieldName + " (" + annotationName + "): " + violation.getMessage();
+				})
+				.reduce((msg1, msg2) -> msg1 + " | " + msg2)
+				.orElse("Erro de validação na entidade.");
+
+		StandardError error = new StandardError(
+				System.currentTimeMillis(),
+				HttpStatus.BAD_REQUEST.value(),
+				"Erro de Validação de Dados",
+				detalhesErro,
+				request.getRequestURI()
+		);
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 	}
 }
