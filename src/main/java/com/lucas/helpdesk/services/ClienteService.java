@@ -1,13 +1,14 @@
 package com.lucas.helpdesk.services;
 
-import com.lucas.helpdesk.domain.Pessoa;
 import com.lucas.helpdesk.domain.Cliente;
+import com.lucas.helpdesk.domain.Pessoa;
 import com.lucas.helpdesk.dtos.ClienteDTO;
-import com.lucas.helpdesk.repositories.PessoaRepository;
 import com.lucas.helpdesk.repositories.ClienteRepository;
+import com.lucas.helpdesk.repositories.PessoaRepository;
 import com.lucas.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.lucas.helpdesk.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +19,10 @@ public class ClienteService {
 
 	@Autowired
 	private ClienteRepository repository;
-
 	@Autowired
 	private PessoaRepository pessoaRepository;
+	@Autowired
+	private BCryptPasswordEncoder encoder;
 
 	public Cliente findById(Integer id) {
 		Optional<Cliente> obj = repository.findById(id);
@@ -33,6 +35,7 @@ public class ClienteService {
 
 	public Cliente create(ClienteDTO requestModel) {
 		requestModel.setId(null);
+		requestModel.setSenha(encoder.encode(requestModel.getSenha()));
 		validaPorCpfEEmail(requestModel);
 		Cliente newObj = new Cliente(requestModel);
 		return repository.save(newObj);

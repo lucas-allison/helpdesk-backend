@@ -1,27 +1,28 @@
 package com.lucas.helpdesk.services;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.lucas.helpdesk.domain.Pessoa;
+import com.lucas.helpdesk.domain.Tecnico;
+import com.lucas.helpdesk.dtos.TecnicoDTO;
 import com.lucas.helpdesk.repositories.PessoaRepository;
+import com.lucas.helpdesk.repositories.TecnicoRepository;
 import com.lucas.helpdesk.services.exceptions.DataIntegrityViolationException;
 import com.lucas.helpdesk.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.lucas.helpdesk.domain.Tecnico;
-import com.lucas.helpdesk.dtos.TecnicoDTO;
-import com.lucas.helpdesk.repositories.TecnicoRepository;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TecnicoService {
 
 	@Autowired
 	private TecnicoRepository repository;
-
 	@Autowired
 	private PessoaRepository pessoaRepository;
+	@Autowired
+	private BCryptPasswordEncoder encoder;
 
 	public Tecnico findById(Integer id) {
 		Optional<Tecnico> obj = repository.findById(id);
@@ -34,6 +35,7 @@ public class TecnicoService {
 
 	public Tecnico create(TecnicoDTO requestModel) {
 		requestModel.setId(null);
+		requestModel.setSenha(encoder.encode(requestModel.getSenha()));
 		validaPorCpfEEmail(requestModel);
 		Tecnico newObj = new Tecnico(requestModel);
 		return repository.save(newObj);

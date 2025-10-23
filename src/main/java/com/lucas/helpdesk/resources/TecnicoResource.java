@@ -1,18 +1,18 @@
 package com.lucas.helpdesk.resources;
 
-import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import com.lucas.helpdesk.domain.Tecnico;
 import com.lucas.helpdesk.dtos.TecnicoDTO;
 import com.lucas.helpdesk.services.TecnicoService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/tecnicos")
@@ -35,7 +35,8 @@ public class TecnicoResource {
 		
 		return ResponseEntity.ok().body(listDTO);
 	}
-	
+
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<TecnicoDTO> create(@Valid @RequestBody TecnicoDTO requestModel) {
 		Tecnico newObj = service.create(requestModel);
@@ -43,12 +44,14 @@ public class TecnicoResource {
 		return ResponseEntity.created(uri).build();
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<TecnicoDTO> update(@PathVariable Integer id, @Valid @RequestBody TecnicoDTO requestModel) {
 		Tecnico obj = service.update(id, requestModel);
 		return ResponseEntity.ok().body(new TecnicoDTO(obj));
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<TecnicoDTO> delete(@PathVariable Integer id) {
 		service.delete(id);
